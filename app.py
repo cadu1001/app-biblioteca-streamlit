@@ -110,10 +110,13 @@ with col2:
 # --- Conectar Google Sheets ---
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
-gc = gspread.authorize(creds)
+
 # Carrega as credenciais a partir dos Secrets do Streamlit
 creds_dict = st.secrets["google_sheets_credentials"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+
+gc = gspread.authorize(creds)
+
 planilha = gc.open("Dados_biblioteca_jr")
 aba_livros = planilha.worksheet("Livros")
 aba_alugueis = planilha.worksheet("Alugueis")
