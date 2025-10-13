@@ -3,38 +3,38 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
 
 def render():
-    scope = ["https://spreadsheets.google.com/feeds",
-             "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciais.json", scope)
-    gc = gspread.authorize(creds)
-    planilha = gc.open_by_url(
-        "https://docs.google.com/spreadsheets/d/1wcRYkBqU6qMV_Cb1DLuN2yvxBWgdaevcNunFSYwQZsM/edit"
-    )
-    aba_livros = planilha.worksheet("Livros")
-    aba_alugueis = planilha.worksheet("Alugueis")
+    # --- Conexão e Funções de Dados ---
+    conn = st.connection("gsheets", type=GSheetsConnection)
 
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_livros():
-        return pd.DataFrame(aba_livros.get_all_records())
+        return conn.read(worksheet="Livros")
 
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_alugueis():
-        df = pd.DataFrame(aba_alugueis.get_all_records())
+        df = conn.read(worksheet="Alugueis")
         df["data_retirada"] = pd.to_datetime(df["data_retirada"], errors="coerce")
         df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
         return df
 
     def devolver_livro(id_aluguel):
-        df_alugueis = carregar_alugueis()
         df_livros = carregar_livros()
-        idx_aluguel = df_alugueis.index[df_alugueis["id_aluguel"] == id_aluguel][0]
-        id_livro = df_alugueis.loc[idx_aluguel, "id_livro"]
-        idx_livro = df_livros.index[df_livros["id_livro"] == id_livro][0]
-        aba_livros.update_cell(idx_livro + 2, 4, "disponível")
-        aba_alugueis.update_cell(idx_aluguel + 2, 5, datetime.now().strftime("%Y-%m-%d %H:%M"))
+        df_alugueis = carregar_alugueis()
 
+        aluguel_info = df_alugueis[df_alugueis["id_aluguel"] == id_aluguel].iloc[0]
+        idx_aluguel_planilha = aluguel_info.name + 2
+        id_livro = aluguel_info["id_livro"]
+        idx_livro_planilha = df_livros.index[df_livros["id_livro"] == id_livro][0] + 2
+
+        aba_livros = conn.client._open_spreadsheet().worksheet("Livros")
+        aba_livros.update_cell(idx_livro_planilha, 4, "disponível")
+
+        aba_alugueis = conn.client._open_spreadsheet().worksheet("Alugueis")
+        aba_alugueis.update_cell(idx_aluguel_planilha, 5, datetime.now().strftime("%Y-%m-%d %H:%M"))
+    
     st.title("📤 Devolver Livro")
     df_alugueis = carregar_alugueis()
     df_livros = carregar_livros()
@@ -53,3 +53,4 @@ def render():
             devolver_livro(id_aluguel)
             st.success(f'Aluguel {id_aluguel} devolvido com sucesso!')
             st.rerun()
+
