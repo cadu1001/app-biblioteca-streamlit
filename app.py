@@ -117,7 +117,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 
 gc = gspread.authorize(creds)
 
-planilha = gc.open("Dados_biblioteca_jr")
+planilha = gc.open("Dados-biblioteca-Jr")
 aba_livros = planilha.worksheet("Livros")
 aba_alugueis = planilha.worksheet("Alugueis")
 
