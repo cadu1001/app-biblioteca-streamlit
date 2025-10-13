@@ -110,7 +110,6 @@ with col2:
 # --- Conectar Google Sheets ---
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credenciais.json", scope)
 gc = gspread.authorize(creds)
 planilha = gc.open("Dados_biblioteca_jr")
 aba_livros = planilha.worksheet("Livros")
