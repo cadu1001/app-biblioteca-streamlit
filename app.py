@@ -238,7 +238,7 @@ elif st.session_state.pagina == "retirada":
             else:
                 retirar_livro(id_livro, nome_pessoa)
                 st.success(f'Livro "{selecao}" retirado com sucesso!')
-                st.experimental_rerun()
+                st.rerun()
 
 # --- Página Devolução ---
 elif st.session_state.pagina == "devolucao":
@@ -254,4 +254,4 @@ elif st.session_state.pagina == "devolucao":
             id_aluguel = int(selecao.split(" - ")[0])
             devolver_livro(id_aluguel)
             st.success(f'Aluguel {id_aluguel} devolvido com sucesso!')
-            st.experimental_rerun()
+            st.rerun()
