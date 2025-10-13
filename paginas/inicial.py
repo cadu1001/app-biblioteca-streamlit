@@ -4,27 +4,19 @@ import plotly.express as px
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from streamlit_gsheets import GSheetsConnection
 
 def render():
-    # --- Conexão com Google Sheets ---
-    scope = ["https://spreadsheets.google.com/feeds",
-             "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciais.json", scope)
-    gc = gspread.authorize(creds)
-    planilha = gc.open_by_url(
-        "https://docs.google.com/spreadsheets/d/1wcRYkBqU6qMV_Cb1DLuN2yvxBWgdaevcNunFSYwQZsM/edit"
-    )
-    aba_livros = planilha.worksheet("Livros")
-    aba_alugueis = planilha.worksheet("Alugueis")
+    # --- Conexão e Carregamento de Dados ---
+    conn = st.connection("gsheets", type=GSheetsConnection)
 
-    # --- Carregar dados ---
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_livros():
-        return pd.DataFrame(aba_livros.get_all_records())
+        return conn.read(worksheet="Livros")
 
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_alugueis():
-        df = pd.DataFrame(aba_alugueis.get_all_records())
+        df = conn.read(worksheet="Alugueis")
         df["data_retirada"] = pd.to_datetime(df["data_retirada"], errors="coerce")
         df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
         return df
@@ -138,3 +130,4 @@ def render():
             )
             fig_pop.update_layout(paper_bgcolor="#0a0f2c", plot_bgcolor="#0a0f2c", font_color="white")
             st.plotly_chart(fig_pop, use_container_width=True)
+
