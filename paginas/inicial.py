@@ -10,15 +10,21 @@ def render():
     df_alugueis = conexao.carregar_alugueis()
 
     # --- Título e logo (código original) ---
-    st.markdown(
-        """
-        <h1 style='display: flex; align-items: center;'>
-            <img src='Logo_Itajr.png' style='height:50px; margin-right:10px;'>
-            Biblioteca Jr - Visão Geral
-        </h1>
-        """,
-        unsafe_allow_html=True
-    )
+    import streamlit as st
+
+    # Garante que a imagem está no mesmo diretório do script
+    logo_path = 'Logo_Itajr.png'
+
+    # Cria duas colunas: uma estreita para a imagem e uma larga para o título
+    col1, col2 = st.columns([1, 6])
+
+    with col1:
+        # Adiciona a imagem
+        st.image(logo_path, width=50)
+
+    with col2:
+        # Adiciona o título
+        st.title("Biblioteca Jr - Visão Geral")
 
     # --- CSS personalizado (código original) ---
     st.markdown("""
@@ -114,3 +120,4 @@ def render():
             )
             fig_pop.update_layout(paper_bgcolor="#0a0f2c", plot_bgcolor="#0a0f2c", font_color="white")
             st.plotly_chart(fig_pop, use_container_width=True)
+
