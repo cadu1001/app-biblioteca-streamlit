@@ -1,2 +1,11 @@
-# Ignorar arquivos de credenciais e ambiente
+# Ambiente Virtual e arquivos de IDE
+venv/
+.idea/
+
+# Arquivos de segredos e credenciais
+.streamlit/secrets.toml
 credenciais.json
+
+# Cache do Python
+__pycache__/
+*.pyc
