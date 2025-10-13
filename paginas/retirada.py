@@ -5,38 +5,34 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 from unidecode import unidecode
+from streamlit_gsheets import GSheetsConnection
 
 def render():
     st.title("📥 Retirar Livro")
 
-    # --- Conexão com Google Sheets ---
-    scope = ["https://spreadsheets.google.com/feeds",
-             "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciais.json", scope)
-    gc = gspread.authorize(creds)
-    planilha = gc.open_by_url(
-        "https://docs.google.com/spreadsheets/d/1wcRYkBqU6qMV_Cb1DLuN2yvxBWgdaevcNunFSYwQZsM/edit"
-    )
-    aba_livros = planilha.worksheet("Livros")
-    aba_alugueis = planilha.worksheet("Alugueis")
-    aba_alunos = planilha.worksheet("Alunos")
+    # --- Conexão e Funções de Dados ---
+    conn = st.connection("gsheets", type=GSheetsConnection)
 
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_livros():
-        return pd.DataFrame(aba_livros.get_all_records())
+        return conn.read(worksheet="Livros")
 
-    @st.cache_data(ttl=10)
+    @st.cache_data(ttl=60)
     def carregar_alunos():
-        return pd.DataFrame(aba_alunos.get_all_records())
+        return conn.read(worksheet="Alunos")
 
     def retirar_livro(id_livro, nome_pessoa):
         df_livros = carregar_livros()
-        df_alugueis = pd.DataFrame(aba_alugueis.get_all_records())
-        idx_livro = df_livros.index[df_livros["id_livro"] == id_livro][0]
-        aba_livros.update_cell(idx_livro + 2, 4, "alugado")
+        df_alugueis = conn.read(worksheet="Alugueis")
+        idx_livro_planilha = df_livros.index[df_livros["id_livro"] == id_livro][0] + 2
+
+        aba_livros = conn.client._open_spreadsheet().worksheet("Livros")
+        aba_livros.update_cell(idx_livro_planilha, 4, "alugado")
+
+        aba_alugueis = conn.client._open_spreadsheet().worksheet("Alugueis")
         novo_id = len(df_alugueis) + 1
-        aba_alugueis.append_row([novo_id, id_livro, nome_pessoa,
-                                 datetime.now().strftime("%Y-%m-%d %H:%M"), ""])
+        nova_linha = [novo_id, id_livro, nome_pessoa, datetime.now().strftime("%Y-%m-%d %H:%M"), ""]
+        aba_alugueis.append_row(nova_linha)
 
     # --- Dados ---
     df_livros = carregar_livros()
@@ -85,3 +81,4 @@ def render():
             livros_disponiveis[["titulo", "autor", "status"]].style.apply(color_row, axis=1),
             use_container_width=True
         )
+
