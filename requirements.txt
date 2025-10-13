@@ -3,3 +3,8 @@ pandas
 gspread
 oauth2client
 plotly
+unidecode
+streamlit-gsheets-connection
+duckdb
+validators
+sql-metadata
