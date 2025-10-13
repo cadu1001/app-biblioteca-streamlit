@@ -1,30 +1,15 @@
+# paginas/inicial.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from streamlit_gsheets import GSheetsConnection
+import conexao  # Importa o nosso novo arquivo central de conexão
 
 def render():
-    # --- Conexão e Carregamento de Dados ---
-    conn = st.connection("gsheets", type=GSheetsConnection)
+    # --- Carrega os dados usando as funções centralizadas ---
+    df_livros = conexao.carregar_livros()
+    df_alugueis = conexao.carregar_alugueis()
 
-    @st.cache_data(ttl=60)
-    def carregar_livros():
-        return conn.read(worksheet="Livros")
-
-    @st.cache_data(ttl=60)
-    def carregar_alugueis():
-        df = conn.read(worksheet="Alugueis")
-        df["data_retirada"] = pd.to_datetime(df["data_retirada"], errors="coerce")
-        df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
-        return df
-
-    df_livros = carregar_livros()
-    df_alugueis = carregar_alugueis()
-
-    # --- Título e logo ---
+    # --- Título e logo (código original) ---
     st.markdown(
         """
         <h1 style='display: flex; align-items: center;'>
@@ -35,7 +20,7 @@ def render():
         unsafe_allow_html=True
     )
 
-    # --- CSS personalizado ---
+    # --- CSS personalizado (código original) ---
     st.markdown("""
         <style>
         .book-card {
@@ -56,13 +41,13 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # --- Métricas ---
+    # --- Métricas (código original) ---
     col1, col2, col3 = st.columns(3)
     col1.metric("Livros Disponíveis", len(df_livros[df_livros["status"].str.lower() == "disponível"]))
     col2.metric("Livros Alugados", len(df_livros[df_livros["status"].str.lower() == "alugado"]))
     col3.metric("Total de Aluguéis", len(df_alugueis))
 
-    # --- Campo de busca ---
+    # --- Campo de busca (código original) ---
     st.text_input("🔎 Digite o nome do livro ou categoria", key="filtro_livro")
     filtro = st.session_state.filtro_livro.strip().lower() if "filtro_livro" in st.session_state else ""
     df_filtrado = df_livros.copy()
@@ -72,7 +57,7 @@ def render():
             df_livros["categoria"].str.lower().str.contains(filtro, na=False)
         ]
 
-    # --- Exibição dos livros ---
+    # --- Exibição dos livros (código original) ---
     if not df_filtrado.empty:
         num_cols = 3
         for i in range(0, len(df_filtrado), num_cols):
@@ -96,7 +81,6 @@ def render():
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Expander para a sinopse abaixo do card
                     with st.expander(f"📖 Sinopse de {titulo}", expanded=False):
                         if sinopse:
                             st.markdown(f"<p style='text-align: justify;'>{sinopse}</p>", unsafe_allow_html=True)
@@ -105,7 +89,7 @@ def render():
     else:
         st.info("Nenhum livro encontrado com esse filtro.")
 
-    # --- Dashboards ---
+    # --- Dashboards (código original) ---
     if not df_alugueis.empty:
         st.markdown("### 📊 Dashboards")
         c1, c2 = st.columns(2)
@@ -130,4 +114,3 @@ def render():
             )
             fig_pop.update_layout(paper_bgcolor="#0a0f2c", plot_bgcolor="#0a0f2c", font_color="white")
             st.plotly_chart(fig_pop, use_container_width=True)
-
