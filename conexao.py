@@ -29,18 +29,18 @@ aba_alunos = planilha.worksheet("Alunos")
 
 
 # --- Funções de Leitura e Escrita ---
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10)
 def carregar_livros():
     return pd.DataFrame(aba_livros.get_all_records())
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10)
 def carregar_alugueis():
     df = pd.DataFrame(aba_alugueis.get_all_records())
     df["data_retirada"] = pd.to_datetime(df["data_retirada"], errors="coerce")
     df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
     return df
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10)
 def carregar_alunos():
     return pd.DataFrame(aba_alunos.get_all_records())
 
