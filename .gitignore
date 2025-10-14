@@ -11,4 +11,4 @@ __pycache__/
 *.pyc
 
 # Ambiente do toml
-.github/
+.streamlit/
