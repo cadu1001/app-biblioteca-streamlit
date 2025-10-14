@@ -101,7 +101,7 @@ def render():
         c1, c2 = st.columns(2)
 
         with c1:
-            df_alugueis["mes_retirada"] = df_alugueis["data_retirada"].dt.to_period("M").astype(str)
+            df_alugueis["mes_retirada"] = df_alugueis["data_retirada"].dt.strftime('%Y-%m')
             alugueis_por_mes = df_alugueis.groupby("mes_retirada").size().reset_index(name="total")
             fig_mes = px.bar(
                 alugueis_por_mes, x="mes_retirada", y="total", text="total",
@@ -120,4 +120,5 @@ def render():
             )
             fig_pop.update_layout(paper_bgcolor="#0a0f2c", plot_bgcolor="#0a0f2c", font_color="white")
             st.plotly_chart(fig_pop, use_container_width=True)
+
 
