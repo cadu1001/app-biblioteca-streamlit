@@ -9,3 +9,6 @@ credenciais.json
 # Cache do Python
 __pycache__/
 *.pyc
+
+# Ambiente do toml
+.github/
